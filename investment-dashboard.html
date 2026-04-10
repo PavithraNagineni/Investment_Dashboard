@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vesta — Investment Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --cream: #f5f0e8;
+  --warm: #ede7d9;
+  --ink: #1a1612;
+  --ink2: #3d3530;
+  --muted: #8a7f74;
+  --gold: #c9933a;
+  --gold2: #e8b85a;
+  --green: #2d7d5a;
+  --red: #b83c3c;
+  --card: #ffffff;
+  --shadow: 0 2px 20px rgba(26,22,18,0.08);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--cream); color:var(--ink); font-family:'IBM Plex Sans',sans-serif; min-height:100vh; }
+
+/* Layout */
+.shell { display:grid; grid-template-columns:220px 1fr; min-height:100vh; }
+
+/* Sidebar */
+aside {
+  background:var(--ink); color:var(--cream); padding:32px 20px;
+  display:flex; flex-direction:column; gap:6px; position:sticky; top:0; height:100vh; overflow:hidden;
+}
+.brand { font-family:'Playfair Display',serif; font-size:26px; font-weight:800; color:var(--gold2); margin-bottom:32px; letter-spacing:-0.5px; }
+.nav-item { display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:10px; cursor:pointer; font-size:14px; font-weight:500; color:rgba(245,240,232,0.6); transition:all 0.2s; }
+.nav-item:hover { background:rgba(255,255,255,0.06); color:var(--cream); }
+.nav-item.active { background:rgba(201,147,58,0.2); color:var(--gold2); }
+.nav-icon { font-size:17px; width:20px; text-align:center; }
+.nav-divider { height:1px; background:rgba(255,255,255,0.08); margin:12px 0; }
+.sidebar-footer { margin-top:auto; padding-top:20px; border-top:1px solid rgba(255,255,255,0.08); }
+.user-row { display:flex; align-items:center; gap:10px; }
+.avatar { width:36px; height:36px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; color:#fff; flex-shrink:0; }
+.user-name { font-size:13px; font-weight:600; }
+.user-role { font-size:11px; color:rgba(245,240,232,0.4); font-family:'IBM Plex Mono',monospace; }
+
+/* Main */
+main { padding:36px 36px 48px; overflow-y:auto; }
+.top-bar { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:32px; }
+.page-title { font-family:'Playfair Display',serif; font-size:32px; font-weight:700; letter-spacing:-0.5px; }
+.page-sub { color:var(--muted); font-size:14px; margin-top:4px; }
+.date-pill { background:var(--card); border:1px solid var(--warm); padding:8px 16px; border-radius:20px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); box-shadow:var(--shadow); }
+
+/* KPI row */
+.kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:28px; }
+.kpi { background:var(--card); border-radius:16px; padding:22px 24px; box-shadow:var(--shadow); border:1px solid rgba(0,0,0,0.04); animation:rise 0.4s ease both; position:relative; overflow:hidden; }
+.kpi::after { content:''; position:absolute; top:-40px; right:-40px; width:100px; height:100px; border-radius:50%; background:rgba(201,147,58,0.06); }
+.kpi:nth-child(1){animation-delay:0s} .kpi:nth-child(2){animation-delay:0.07s} .kpi:nth-child(3){animation-delay:0.14s} .kpi:nth-child(4){animation-delay:0.21s}
+@keyframes rise { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+.kpi-label { font-size:11px; font-family:'IBM Plex Mono',monospace; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+.kpi-value { font-family:'Playfair Display',serif; font-size:28px; font-weight:700; letter-spacing:-0.5px; }
+.kpi-change { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-family:'IBM Plex Mono',monospace; margin-top:6px; padding:3px 8px; border-radius:6px; }
+.kpi-up { color:var(--green); background:rgba(45,125,90,0.1); }
+.kpi-dn { color:var(--red); background:rgba(184,60,60,0.1); }
+
+/* Charts row */
+.charts-row { display:grid; grid-template-columns:2fr 1fr; gap:18px; margin-bottom:28px; }
+.chart-card { background:var(--card); border-radius:16px; padding:24px; box-shadow:var(--shadow); border:1px solid rgba(0,0,0,0.04); animation:rise 0.4s 0.28s ease both; }
+.chart-card-title { font-family:'Playfair Display',serif; font-size:18px; font-weight:700; margin-bottom:4px; }
+.chart-card-sub { font-size:12px; color:var(--muted); font-family:'IBM Plex Mono',monospace; margin-bottom:20px; }
+.chart-tabs2 { display:flex; gap:4px; margin-bottom:20px; }
+.ctab { background:none; border:1px solid var(--warm); color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size:11px; padding:4px 10px; border-radius:6px; cursor:pointer; transition:all 0.2s; }
+.ctab.active,.ctab:hover { background:var(--gold); border-color:var(--gold); color:#fff; }
+svg.main-chart { width:100%; height:200px; }
+
+/* Donut */
+.donut-wrap { display:flex; flex-direction:column; align-items:center; }
+svg.donut { width:160px; height:160px; display:block; margin:0 auto 16px; }
+.legend { width:100%; }
+.legend-item { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; font-size:13px; }
+.legend-dot { width:10px; height:10px; border-radius:3px; margin-right:8px; flex-shrink:0; }
+.legend-label { display:flex; align-items:center; color:var(--ink2); }
+.legend-pct { font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); }
+
+/* Bottom row */
+.bottom-row { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.table-card { background:var(--card); border-radius:16px; padding:24px; box-shadow:var(--shadow); border:1px solid rgba(0,0,0,0.04); animation:rise 0.4s 0.35s ease both; }
+.table-card-title { font-family:'Playfair Display',serif; font-size:18px; font-weight:700; margin-bottom:16px; }
+.mini-table { width:100%; border-collapse:collapse; }
+.mini-table th { font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); padding:0 0 10px; text-align:left; border-bottom:1px solid var(--warm); }
+.mini-table td { padding:11px 0; font-size:13px; border-bottom:1px solid rgba(237,231,217,0.6); }
+.mini-table tr:last-child td { border-bottom:none; }
+.tag { padding:2px 8px; border-radius:5px; font-family:'IBM Plex Mono',monospace; font-size:11px; }
+.tag-buy { background:rgba(45,125,90,0.12); color:var(--green); }
+.tag-sell { background:rgba(184,60,60,0.12); color:var(--red); }
+.bar-wrap { width:80px; height:6px; background:var(--warm); border-radius:3px; }
+.bar-fill { height:100%; border-radius:3px; background:var(--gold); }
+
+@media(max-width:900px){ .shell{grid-template-columns:1fr} aside{display:none} .kpi-row{grid-template-columns:1fr 1fr} .charts-row{grid-template-columns:1fr} .bottom-row{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside>
+    <div class="brand">Vesta</div>
+    <div class="nav-item active"><span class="nav-icon">◈</span> Dashboard</div>
+    <div class="nav-item"><span class="nav-icon">◉</span> Portfolio</div>
+    <div class="nav-item"><span class="nav-icon">⊞</span> Watchlist</div>
+    <div class="nav-item"><span class="nav-icon">◫</span> Analytics</div>
+    <div class="nav-divider"></div>
+    <div class="nav-item"><span class="nav-icon">⊙</span> Orders</div>
+    <div class="nav-item"><span class="nav-icon">◎</span> Reports</div>
+    <div class="nav-item"><span class="nav-icon">◌</span> Settings</div>
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="avatar">P</div>
+        <div><div class="user-name">Pavithra N.</div><div class="user-role">Investor</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="top-bar">
+      <div>
+        <div class="page-title">Good morning, Pavithra.</div>
+        <div class="page-sub">Here's your portfolio at a glance.</div>
+      </div>
+      <div class="date-pill" id="dateStr"></div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-label">Portfolio Value</div>
+        <div class="kpi-value">₹4,28,350</div>
+        <div class="kpi-change kpi-up">▲ 2.14% today</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Total Returns</div>
+        <div class="kpi-value">₹38,920</div>
+        <div class="kpi-change kpi-up">▲ 10.0% overall</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Invested</div>
+        <div class="kpi-value">₹3,89,430</div>
+        <div class="kpi-change" style="color:var(--muted);background:var(--warm)">Across 6 stocks</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Today's P&L</div>
+        <div class="kpi-value" style="color:var(--green)">+₹9,162</div>
+        <div class="kpi-change kpi-up">▲ Best: INFY</div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-card-title">Portfolio Growth</div>
+        <div class="chart-card-sub">Net value over time</div>
+        <div class="chart-tabs2">
+          <button class="ctab active">1W</button>
+          <button class="ctab">1M</button>
+          <button class="ctab">3M</button>
+          <button class="ctab">1Y</button>
+        </div>
+        <svg class="main-chart" id="mainChart" viewBox="0 0 600 200" preserveAspectRatio="none"></svg>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Allocation</div>
+        <div class="chart-card-sub">By sector</div>
+        <div class="donut-wrap">
+          <svg class="donut" id="donutSvg" viewBox="0 0 160 160"></svg>
+          <div class="legend" id="legend"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-row">
+      <div class="table-card">
+        <div class="table-card-title">Top Holdings</div>
+        <table class="mini-table">
+          <thead><tr><th>Stock</th><th>Return</th><th>Weight</th></tr></thead>
+          <tbody id="holdingsBody"></tbody>
+        </table>
+      </div>
+      <div class="table-card">
+        <div class="table-card-title">Recent Orders</div>
+        <table class="mini-table">
+          <thead><tr><th>Stock</th><th>Type</th><th>Amount</th><th>Date</th></tr></thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+document.getElementById('dateStr').textContent = new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+
+// Chart tabs
+document.querySelectorAll('.ctab').forEach(t=>t.addEventListener('click',function(){ document.querySelectorAll('.ctab').forEach(x=>x.classList.remove('active')); this.classList.add('active'); drawMain(); }));
+
+function drawMain(){
+  const pts=Array.from({length:28},(_,i)=>{const b=390000+i*1400;return b+(Math.sin(i*0.8)*9000)+(Math.random()*5000-2000);});
+  const mn=Math.min(...pts),mx=Math.max(...pts),rng=mx-mn;
+  const W=600,H=200,p=12;
+  const xs=pts.map((_,i)=>p+i*(W-p*2)/(pts.length-1));
+  const ys=pts.map(v=>H-p-(v-mn)/rng*(H-p*2));
+  const path=xs.map((x,i)=>`${i===0?'M':'L'}${x},${ys[i]}`).join(' ');
+  const area=`${path} L${xs[xs.length-1]},${H} L${xs[0]},${H} Z`;
+  document.getElementById('mainChart').innerHTML=`
+    <defs>
+      <linearGradient id="mg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#c9933a" stop-opacity="0.2"/>
+        <stop offset="100%" stop-color="#c9933a" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="${area}" fill="url(#mg)"/>
+    <path d="${path}" fill="none" stroke="#c9933a" stroke-width="2.5" stroke-linejoin="round"/>
+    ${xs.filter((_,i)=>i%6===0).map((x,j)=>`<text x="${x}" y="${H-2}" font-family="IBM Plex Mono" font-size="10" fill="#8a7f74" text-anchor="middle">Day ${j*6+1}</text>`).join('')}`;
+}
+
+function drawDonut(){
+  const sectors=[{name:'IT',pct:38,color:'#c9933a'},{name:'Banking',pct:25,color:'#2d7d5a'},{name:'Energy',pct:20,color:'#5a6abd'},{name:'FMCG',pct:17,color:'#b8832a'}];
+  const cx=80,cy=80,R=60,r=38;
+  let angle=-Math.PI/2;
+  let paths='';
+  sectors.forEach(s=>{
+    const a=s.pct/100*Math.PI*2;
+    const x1=cx+R*Math.cos(angle),y1=cy+R*Math.sin(angle);
+    const x2=cx+R*Math.cos(angle+a),y2=cy+R*Math.sin(angle+a);
+    const xi1=cx+r*Math.cos(angle),yi1=cy+r*Math.sin(angle);
+    const xi2=cx+r*Math.cos(angle+a),yi2=cy+r*Math.sin(angle+a);
+    const lg=a>Math.PI?1:0;
+    paths+=`<path d="M${x1},${y1} A${R},${R} 0 ${lg},1 ${x2},${y2} L${xi2},${yi2} A${r},${r} 0 ${lg},0 ${xi1},${yi1} Z" fill="${s.color}" opacity="0.9"/>`;
+    angle+=a;
+  });
+  document.getElementById('donutSvg').innerHTML=`${paths}<circle cx="${cx}" cy="${cy}" r="26" fill="white"/><text x="${cx}" y="${cy-4}" text-anchor="middle" font-family="Playfair Display" font-size="14" font-weight="700" fill="#1a1612">₹4.28L</text><text x="${cx}" y="${cy+14}" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#8a7f74">Total</text>`;
+  const leg=document.getElementById('legend');
+  leg.innerHTML=sectors.map(s=>`<div class="legend-item"><div class="legend-label"><div class="legend-dot" style="background:${s.color}"></div>${s.name}</div><div class="legend-pct">${s.pct}%</div></div>`).join('');
+}
+
+function renderHoldings(){
+  const stocks=[{s:'TCS',r:'+14.2%',w:28},{s:'RELIANCE',r:'+8.5%',w:22},{s:'INFY',r:'+18.1%',w:20},{s:'HDFCBANK',r:'+6.3%',w:18},{s:'WIPRO',r:'-2.1%',w:12}];
+  document.getElementById('holdingsBody').innerHTML=stocks.map(h=>`<tr>
+    <td><b>${h.s}</b></td>
+    <td style="font-family:'IBM Plex Mono',monospace;color:${h.r.startsWith('+')?'var(--green)':'var(--red)'};font-size:13px">${h.r}</td>
+    <td><div class="bar-wrap"><div class="bar-fill" style="width:${h.w*3}px"></div></div></td></tr>`).join('');
+}
+
+function renderOrders(){
+  const orders=[
+    {s:'INFY',t:'BUY',a:'₹14,150',d:'Today'},
+    {s:'TCS',t:'SELL',a:'₹11,460',d:'Yesterday'},
+    {s:'WIPRO',t:'BUY',a:'₹9,740',d:'Apr 8'},
+    {s:'HDFC',t:'BUY',a:'₹16,720',d:'Apr 6'},
+    {s:'REL',t:'SELL',a:'₹29,410',d:'Apr 3'},
+  ];
+  document.getElementById('ordersBody').innerHTML=orders.map(o=>`<tr>
+    <td><b>${o.s}</b></td>
+    <td><span class="tag ${o.t==='BUY'?'tag-buy':'tag-sell'}">${o.t}</span></td>
+    <td style="font-family:'IBM Plex Mono',monospace;font-size:13px">${o.a}</td>
+    <td style="color:var(--muted);font-size:12px">${o.d}</td></tr>`).join('');
+}
+
+drawMain(); drawDonut(); renderHoldings(); renderOrders();
+</script>
+</body>
+</html>
