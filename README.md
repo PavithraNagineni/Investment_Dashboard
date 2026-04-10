@@ -101,9 +101,3 @@ This project consists of two main components:
 
 **Pavithra Nagineni**
 
----
-
-If you want, I can also:
-✅ Convert this into **GitHub professional README (with badges & screenshots)**
-✅ Or create a **mini project report (for submission)**
-
